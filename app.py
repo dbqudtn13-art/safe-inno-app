@@ -6,13 +6,13 @@ import datetime
 from PIL import Image
 import json
 
-# 웹페이지 기본 설정 (타이틀 및 다크모드 대시보드 스타일 레이아웃)
+# 웹페이지 기본 설정
 st.set_page_config(page_title="Safe-Inno Pro", page_icon="🚨", layout="wide")
 
 st.title("🚨 Safe-Inno Pro | AI 디지털 안전혁신 플랫폼")
 st.write("사진과 지적사항을 입력하면 AI가 실시간 웹 검색을 통해 해결책과 타 기관 유사사례를 찾아 아카이빙합니다.")
 
-# 1. 스트림릿 금고(Secrets)에서 API 키와 구글 열쇠 안전하게 불러오기
+# 1. 스트림릿 금고(Secrets)에서 키 불러오기
 try:
     gemini_key = st.secrets["GEMINI_API_KEY"]
     google_creds_json = json.loads(st.secrets["GOOGLE_CREDENTIALS"])
@@ -20,20 +20,19 @@ except Exception as e:
     st.error("우측 상단 settings -> Secrets에 API 키와 구글 열쇠(JSON)가 올바르게 입력되었는지 확인해주세요!")
     st.stop()
 
-# 2. AI 및 구글 스프레드시트 데이터베이스 연결 세팅
+# 2. AI 및 구글 스프레드시트 연결 세팅
 genai.configure(api_key=gemini_key)
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_dict(google_creds_json, scope)
 client = gspread.authorize(creds)
 
-# 안전점검_DB 엑셀 파일 열기
 try:
     sheet = client.open("안전점검_DB").sheet1
 except Exception as e:
-    st.error(f"구글 스프레드시트('안전점검_DB')를 찾을 수 없습니다. 파일 이름과 공유 설정을 확인해주세요: {e}")
+    st.error(f"구글 스프레드시트('안전점검_DB')를 찾을 수 없습니다. 파일 이름을 확인해주세요: {e}")
     st.stop()
 
-# 3. 화면 레이아웃 분할 (좌측: 입력 폼 / 우측: AI 진단 결과 및 크롤링)
+# 3. 화면 레이아웃 분할
 col1, col2 = st.columns([1, 1])
 
 with col1:
@@ -57,13 +56,13 @@ with col2:
                     if uploaded_file is not None:
                         img = Image.open(uploaded_file)
                     
-                    # [들여쓰기 및 모델명 수정 완료] 실시간 검색 기능이 결합된 최신 대화형 모델 설정
+                    # [★중요] 구글 실시간 검색 연동 공식 정석 문법으로 100% 교정
                     model = genai.GenerativeModel(
                         model_name="gemini-1.5-flash",
-                        tools=[{"google_search_retrieval": {}}]
+                        tools=['google_search']
                     )
                     
-                    # AI 작동 가이드라인 프롬프트 설계
+                    # AI 프롬프트 설계
                     prompt = f"""
                     당신은 대한민국 최고의 건설 및 제조 현장 안전보건 전문 AI입니다.
                     사용자가 제보한 아래의 현장 지적사항을 분석하여 두 가지 핵심 솔루션을 제공해주세요.
@@ -82,10 +81,11 @@ with col2:
                     if img:
                         inputs.append(img)
                         
-                    # AI 구동 및 결과 파싱
+                    # AI 구동
                     response = model.generate_content(inputs)
                     res_text = response.text
                     
+                    # 결과 분리 파싱
                     if "[AI 해결책]" in res_text and "[유사사례]" in res_text:
                         parts = res_text.split("[유사사례]")
                         ai_solution = parts[0].replace("[AI 해결책]", "").strip()
@@ -94,7 +94,7 @@ with col2:
                         ai_solution = res_text
                         similar_case = "실시간 검색 연동 완료 (상세 내용은 하단 참조)"
                     
-                    # 4. 구글 스프레드시트 데이터베이스에 실시간 기록 데이터 누적
+                    # 4. 구글 스프레드시트 데이터베이스에 저장
                     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     sheet.append_row([now, user_issue, ai_solution, similar_case, "조치중"])
                     
@@ -112,10 +112,9 @@ st.subheader("📊 월간 안전점검 아카이빙 현황 (구글 엑셀 실시
 try:
     data = sheet.get_all_records()
     if data:
-        # 데이터프레임 형식으로 웹 화면에 깔끔하게 표 표출
         st.dataframe(data, use_container_width=True)
         
-        # 6. 월간 안전점검의 날용 원클릭 PDF 문서 변환 양식 (A4 규격 인쇄 레이아웃)
+        # 6. 월간 안전점검의 날용 PDF 문서 변환 양식
         html_content = """
         <html>
         <head>
