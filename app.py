@@ -57,11 +57,12 @@ with col2:
                     if uploaded_file is not None:
                         img = Image.open(uploaded_file)
                     
-# 수정 후 변경할 코드
-model = genai.GenerativeModel(
-    model_name="gemini-1.5-pro",
-    tools=[{"google_search_retrieval": {}}]
-)                    
+                    # 렌더링 위치 및 들여쓰기 수정 완료
+                    model = genai.GenerativeModel(
+                        model_name="gemini-1.5-pro",
+                        tools=[{"google_search_retrieval": {}}]
+                    )
+                    
                     # AI에게 줄 명령문(프롬프트)
                     prompt = f"""
                     당신은 대한민국 최고의 건설/제조 현장 안전 전문 AI입니다.
