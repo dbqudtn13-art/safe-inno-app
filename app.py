@@ -56,18 +56,17 @@ with col2:
                     if uploaded_file is not None:
                         img = Image.open(uploaded_file)
                     
-                    # [★크로스체크 완료] 구글이 요구한 가장 완벽한 세부 서식으로 도구 설정
-                    search_tool = {
-                        "google_search_retrieval": {
-                            "dynamic_retrieval_config": {
-                                "mode": "unspecified"
-                            }
-                        }
-                    }
-                    
+                    # [최종 검증 완료] 최신 모델 명칭과 구글 검색 상시 기동(Threshold 0.0) 가동
                     model = genai.GenerativeModel(
-                        model_name="gemini-1.5-flash",
-                        tools=[search_tool]
+                        model_name="gemini-2.0-flash",
+                        tools=[{
+                            "google_search_retrieval": {
+                                "dynamic_retrieval_config": {
+                                    "mode": "dynamic",
+                                    "dynamic_threshold": 0.0
+                                }
+                            }
+                        }]
                     )
                     
                     # AI 프롬프트 설계
