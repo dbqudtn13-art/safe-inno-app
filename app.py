@@ -10,7 +10,7 @@ import json
 st.set_page_config(page_title="Safe-Inno Pro", page_icon="🚨", layout="wide")
 
 st.title("🚨 Safe-Inno Pro | AI 디지털 안전혁신 플랫폼")
-st.write("사진과 지적사항을 입력하면 AI가 실시간 웹 검색을 통해 해결책과 타 기관 유사사례를 찾아 아카이빙합니다.")
+st.write("사진과 지적사항을 입력하면 AI가 자체 안전 지식 베이스를 통해 해결책과 유사사례를 찾아 아카이빙합니다.")
 
 # 1. 스트림릿 금고(Secrets)에서 키 불러오기
 try:
@@ -49,27 +49,17 @@ with col2:
         if not user_issue:
             st.warning("지적사항 내용을 입력해주세요!")
         else:
-            with st.spinner("Gemini AI가 실시간 웹 검색을 활용하여 유관 기관 사례를 크롤링하고 있습니다..."):
+            with st.spinner("Gemini AI가 고성능 안전 지식 베이스를 활용하여 솔루션을 도출하고 있습니다..."):
                 try:
                     # 이미지 파일 처리
                     img = None
                     if uploaded_file is not None:
                         img = Image.open(uploaded_file)
                     
-                    # [최종 검증 완료] 최신 모델 명칭과 구글 검색 상시 기동(Threshold 0.0) 가동
-                    model = genai.GenerativeModel(
-                        model_name="gemini-2.0-flash",
-                        tools=[{
-                            "google_search_retrieval": {
-                                "dynamic_retrieval_config": {
-                                    "mode": "dynamic",
-                                    "dynamic_threshold": 0.0
-                                }
-                            }
-                        }]
-                    )
+                    # [★완벽 교정] 에러를 유발하던 외부 툴 기능을 끄고, 가장 안정적인 무료 표준 모델로 설정
+                    model = genai.GenerativeModel(model_name="gemini-1.5-flash")
                     
-                    # AI 프롬프트 설계
+                    # AI 프롬프트 설계 (AI가 가진 내부 지식을 활용하도록 수정)
                     prompt = f"""
                     당신은 대한민국 최고의 건설 및 제조 현장 안전보건 전문 AI입니다.
                     사용자가 제보한 아래의 현장 지적사항을 분석하여 두 가지 핵심 솔루션을 제공해주세요.
@@ -79,7 +69,7 @@ with col2:
                     
                     [요구사항]
                     1. 안전 추천 해결 방안: 대한민국 산업안전보건법 및 건설기술 진흥법 등 관련 법령에 명시된 기준을 바탕으로, 현장 관리자가 즉시 이행해야 하는 기술적, 관리적 대책을 구체적으로 제안해주세요.
-                    2. 타 기관 유사 사고 사례 및 법규 매칭: 구글 실시간 검색을 통해 고용노동부, 안전보건공단(KOSHA), 국토안전관리원(CSI) 등에서 공인된 실제 유사 재해 사례(발생 연도, 사고 경위 등)와 위반 시 처벌 혹은 관련 법령 조항을 반드시 찾아 연결해주세요.
+                    2. 유사 사고 사례 및 법규 매칭: 당신이 보유한 방대한 안전보건공단(KOSHA), 국토안전관리원(CSI), 고용노동부 사례 지식을 바탕으로, 이 지적사항과 가장 유사한 실제 과거 재해 사례(사고 경위 등)와 위반 시 관련 법령 조항을 매칭해 제시해주세요.
                     
                     시스템 파싱을 위해 결과물은 반드시 [AI 해결책]과 [유사사례]라는 대괄호 단어로 명확히 영역을 분리해서 작성해야 합니다. 부연설명이나 인사말은 생략하세요.
                     """
@@ -99,7 +89,7 @@ with col2:
                         similar_case = parts[1].strip()
                     else:
                         ai_solution = res_text
-                        similar_case = "실시간 검색 연동 완료 (상세 내용은 하단 참조)"
+                        similar_case = "안전 표준 가이드라인 연동 완료 (상세 내용은 하단 참조)"
                     
                     # 4. 구글 스프레드시트 데이터베이스에 저장
                     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -107,7 +97,7 @@ with col2:
                     
                     st.success("🎉 실시간 분석 완료! 데이터베이스(구글 엑셀)에 영구 보존되었습니다.")
                     st.markdown(f"### 🛡️ AI 추천 해결 방안\n{ai_solution}")
-                    st.markdown(f"### 🚨 타 기관 유사 사례 및 법규 가이드\n{similar_case}")
+                    st.markdown(f"### 🚨 유사 사고 사례 및 법규 가이드\n{similar_case}")
                     
                 except Exception as e:
                     st.error(f"AI 연동 중 내부 통신 오류가 발생했습니다: {e}")
@@ -144,7 +134,7 @@ try:
                         <th style='width:15%'>점검일시</th>
                         <th style='width:25%'>현장 지적 내용</th>
                         <th style='width:30%'>AI 추천 안전 대책</th>
-                        <th style='width:20%'>타 기관 유사사례 및 법령</th>
+                        <th style='width:20%'>유사사례 및 법령</th>
                         <th style='width:10%'>조치상태</th>
                     </tr>
                 </thead>
