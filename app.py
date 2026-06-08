@@ -57,12 +57,11 @@ with col2:
                     if uploaded_file is not None:
                         img = Image.open(uploaded_file)
                     
-                    # 실시간 웹 검색 기능이 탑재된 최신 Gemini 모델 호출
-                    model = genai.GenerativeModel(
-                        model_name="gemini-1.5-pro",
-                        tools=[{"google_search": {}}]
-                    )
-                    
+# 수정 후 변경할 코드
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-pro",
+    tools=[{"google_search_retrieval": {}}]
+)                    
                     # AI에게 줄 명령문(프롬프트)
                     prompt = f"""
                     당신은 대한민국 최고의 건설/제조 현장 안전 전문 AI입니다.
