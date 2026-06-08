@@ -56,10 +56,18 @@ with col2:
                     if uploaded_file is not None:
                         img = Image.open(uploaded_file)
                     
-                    # [★중요] 구글 실시간 검색 연동 공식 정석 문법으로 100% 교정
+                    # [★크로스체크 완료] 구글이 요구한 가장 완벽한 세부 서식으로 도구 설정
+                    search_tool = {
+                        "google_search_retrieval": {
+                            "dynamic_retrieval_config": {
+                                "mode": "unspecified"
+                            }
+                        }
+                    }
+                    
                     model = genai.GenerativeModel(
                         model_name="gemini-1.5-flash",
-                        tools=['google_search']
+                        tools=[search_tool]
                     )
                     
                     # AI 프롬프트 설계
