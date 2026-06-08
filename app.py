@@ -56,10 +56,10 @@ with col2:
                     if uploaded_file is not None:
                         img = Image.open(uploaded_file)
                     
-                    # [★완벽 교정] 에러를 유발하던 외부 툴 기능을 끄고, 가장 안정적인 무료 표준 모델로 설정
-                    model = genai.GenerativeModel(model_name="gemini-1.5-flash")
+                    # [★최종 확정] 구글 서버가 인식하는 최신 2.0 모델 + 무료 무제한 조건 만족
+                    model = genai.GenerativeModel(model_name="gemini-2.0-flash")
                     
-                    # AI 프롬프트 설계 (AI가 가진 내부 지식을 활용하도록 수정)
+                    # AI 프롬프트 설계
                     prompt = f"""
                     당신은 대한민국 최고의 건설 및 제조 현장 안전보건 전문 AI입니다.
                     사용자가 제보한 아래의 현장 지적사항을 분석하여 두 가지 핵심 솔루션을 제공해주세요.
